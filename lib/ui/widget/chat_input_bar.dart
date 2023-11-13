@@ -39,7 +39,7 @@ class ChatInputBarState extends State<ChatInputBar> {
     super.initState();
     ChatRoomUIKit.roomController(context)?.setInputBarState(this);
     focusNode = FocusNode();
-    textEditingController = TextEditingController();
+    textEditingController = ChatTextEditingController();
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
         setState(() {
@@ -71,7 +71,7 @@ class ChatInputBarState extends State<ChatInputBar> {
 
   InputType _inputType = InputType.normal;
 
-  late TextEditingController textEditingController;
+  late ChatTextEditingController textEditingController;
 
   late FocusNode focusNode;
 
@@ -337,54 +337,10 @@ class ChatInputBarState extends State<ChatInputBar> {
             : ChatUIKitTheme.of(context).color.neutralColor98),
         child: ChatInputEmoji(
           deleteOnTap: () {
-            TextEditingValue value = textEditingController.value;
-            int current = value.selection.baseOffset;
-            String mStr = "";
-            int offset = 0;
-            do {
-              if (current == 0) {
-                return;
-              }
-              if (current == 1) {
-                mStr = value.text.substring(1);
-                break;
-              }
-
-              if (current >= 2) {
-                String subText = value.text.substring(current - 2, current);
-                if (ChatInputEmoji.emojis.contains(subText)) {
-                  mStr = value.text.substring(0, current - 2) +
-                      value.text.substring(current);
-                  offset = current - 2;
-                  break;
-                } else {
-                  mStr = value.text.substring(0, current - 1) +
-                      value.text.substring(current);
-                  offset = current - 1;
-                  break;
-                }
-              }
-            } while (false);
-            textEditingController.value = value.copyWith(
-              text: mStr,
-              selection: TextSelection.fromPosition(
-                TextPosition(
-                  affinity: TextAffinity.downstream,
-                  offset: offset,
-                ),
-              ),
-            );
+            textEditingController.deleteOnTap();
           },
           emojiClicked: (emoji) {
-            textEditingController.value = TextEditingValue(
-              text: textEditingController.text + emoji,
-              selection: TextSelection.fromPosition(
-                TextPosition(
-                  affinity: TextAffinity.downstream,
-                  offset: emoji.length,
-                ),
-              ),
-            );
+            textEditingController.addEmoji(emoji);
           },
         ),
       ),

@@ -5,15 +5,30 @@ import 'package:flutter/material.dart';
 class ChatTextEditingController extends TextEditingController {
   List<EmojiIndex> includeEmojis = [];
 
+  // @override
+  // set value(TextEditingValue newValue) {
+  //   super.value = newValue;
+  //   debugPrint('value: $newValue');
+  // }
+
   @override
-  set value(TextEditingValue newValue) {
-    assert(
-      !newValue.composing.isValid || newValue.isComposingRangeValid,
-      'New TextEditingValue $newValue has an invalid non-empty composing range '
-      '${newValue.composing}. It is recommended to use a valid composing range, '
-      'even for readonly text fields',
+  set selection(TextSelection newSelection) {
+    super.selection = newSelection;
+    debugPrint('selection: $selection');
+  }
+
+  @override
+  set text(String newText) {
+    value = value.copyWith(
+      text: newText,
+      selection: TextSelection.fromPosition(
+        TextPosition(
+          affinity: TextAffinity.downstream,
+          offset: value.selection.extentOffset + newText.length,
+        ),
+      ),
+      composing: TextRange.empty,
     );
-    super.value = newValue;
   }
 
   @override
@@ -75,6 +90,61 @@ class ChatTextEditingController extends TextEditingController {
     }
 
     return TextSpan(children: tp);
+  }
+
+  void addEmoji(String emoji) {
+    text = text + emoji;
+    // value = TextEditingValue(
+    //   text: text + emoji,
+    //   selection: TextSelection.fromPosition(
+    //     TextPosition(
+    //       affinity: TextAffinity.downstream,
+    //       offset: emoji.length,
+    //     ),
+    //   ),
+    // );
+  }
+
+  void deleteOnTap([int index = -1]) {
+    TextEditingValue value = this.value;
+    if (value.text.isNotEmpty) {
+      int currentIndex = value.selection.extentOffset;
+      if (currentIndex == 0) {
+        return;
+      }
+
+      String subText = value.text.substring(0, currentIndex);
+      do {
+        // 如果当前光标结尾是], 并且包含[, 需要判断它们之间是否是表情
+        if (subText.endsWith(']')) {
+          int index = subText.lastIndexOf('[');
+          if (index == -1) {
+            break;
+          } else {
+            String content = subText.substring(index);
+            // 判断是否是表情
+            if (ChatInputEmoji.emojis.contains(content)) {
+              // 如果是表情，需要移除[]之间的所有内容
+              subText = subText.substring(0, index);
+            }
+          }
+        }
+      } while (false);
+
+      subText = subText + value.text.substring(currentIndex);
+
+      this.value = value.copyWith(
+        text: subText,
+        selection: TextSelection.fromPosition(
+          TextPosition(
+            affinity: TextAffinity.downstream,
+            offset: currentIndex - 1,
+          ),
+        ),
+      );
+    }
+
+    return;
   }
 }
 

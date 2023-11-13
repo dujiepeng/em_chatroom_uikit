@@ -18,6 +18,7 @@ export 'ui/widget/custom_tab_indicator.dart';
 export 'service/controllers/chatroom_controller.dart' hide ChatUIKitExt;
 export 'service/controllers/chat_report_controller.dart';
 export 'service/controllers/chatroom_controller.dart';
+export 'service/controllers/chat_text_editing_controller.dart';
 
 export 'default/controllers/default_gift_page_controller.dart';
 export 'default/controllers/default_report_controller.dart';
